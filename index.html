@@ -184,7 +184,7 @@
             }, { duration: 3000, fill: "forwards" });
         }
 
-        const letters = "1234567890.";
+        const letters = "1234567890.:";
 
         let interval = null;
 
@@ -197,8 +197,13 @@
                 event.target.innerText = event.target.innerText
                     .split("")
                     .map((letter, index) => {
-                        if (event.target.dataset.value[index] === "."){
+                        if (event.target.dataset.value[index] === "."
+                        ) {
                             return "."
+                        }
+                        if (event.target.dataset.value[index] === ":"
+                        ) {
+                            return ":"
                         }
                         if (index < iteration) {
                             return event.target.dataset.value[index];
