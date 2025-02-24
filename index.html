@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/webp" href="favicon.webp">
+
+    <title>What is Your IP?</title>
+    <style>
+        @font-face {
+            font-family: "C";
+            font-weight: 500;
+            src: url('CR.ttf');
+        }
+
+        @font-face {
+            font-family: "C";
+            font-weight: 900;
+            src: url('CB.ttf');
+        }
+
+        html {
+            background-color: #282a36;
+            font-family: "C", sans-serif;
+            color: #f8f8f2;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+
+        body {
+            height: 100vh;
+            margin: 0rem;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-family: monospace;
+            display: inline-block;
+            max-width: 80vw;
+            font-size: 10vw;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid #44475a;
+            padding: 0.2em 0.5em;
+            font-weight: 900;
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.3s border;
+            text-shadow:
+                -1px -1px 0 #44475a,
+                1px -1px 0 #44475a,
+                -1px 1px 0 #44475a,
+                1px 1px 0 #44475a;
+        }
+
+        h1::before {
+            content: 'YOUR PUBLIC IP';
+            background: #282a36;
+            display: inline-block;
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translate(-50%, -50%);
+            color: #6272a4;
+            font-size: 0.25em;
+            padding: 0 1em;
+            transition: 0.3s color;
+            text-shadow: none;
+        }
+
+        h1::after {
+            content: 'CLICK TO COPY';
+            background: #282a36;
+            display: inline-block;
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translate(-50%, 50%);
+            color: #6272a4;
+            font-size: 0.15em;
+            padding: 0 1em;
+            transition: 0.3s color;
+            text-shadow: none;
+        }
+
+        .copied h1 {
+            border: 2px solid #50fa7b;
+        }
+
+        .copied h1::before {
+            color: #50fa7b;
+        }
+
+        .copied h1::after {
+            content: 'COPIED!';
+            color: #50fa7b;
+        }
+
+        @keyframes rotate {
+            from {
+                rotate: 0deg;
+            }
+
+            50% {
+                scale: 1 1.5;
+            }
+
+            to {
+                rotate: 360deg;
+            }
+        }
+
+        #blob {
+            background-color: rgb(255, 255, 255);
+            height: 34vmax;
+            aspect-ratio: 1;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            translate: -50% -50%;
+            border-radius: 50%;
+            background: linear-gradient(to right, rgb(72, 147, 122), rgb(66, 50, 99));
+            animation: rotate 20s infinite;
+            opacity: 0.8;
+            z-index: -2;
+        }
+
+        #blur {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            z-index: -1;
+            backdrop-filter: blur(12vmax);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="blob"></div>
+    <div id="blur"></div>
+    <h1 id="ip-address">Loading...</h1>
+
+    <script>
+        async function getIpAddress() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                const ipAddress = data.ip;
+                const ipElement = document.getElementById('ip-address');
+                ipElement.textContent = ipAddress;
+                // set data-value 
+                ipElement.setAttribute('data-value', ipAddress);
+
+                ipElement.addEventListener('click', () => {
+                    navigator.clipboard.writeText(ipAddress).then(() => {
+                        document.body.classList.add('copied');
+                        setTimeout(() => {
+                            document.body.classList.remove('copied');
+                        }, 1000);
+                    });
+                });
+            } catch (error) {
+                document.getElementById('ip-address').textContent = 'Failed to get IP';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', getIpAddress);
+
+        /* -- Glow effect -- */
+
+        const blob = document.getElementById("blob");
+
+        window.onpointermove = event => {
+            const { clientX, clientY } = event;
+
+            blob.animate({
+                left: `${clientX}px`,
+                top: `${clientY}px`
+            }, { duration: 3000, fill: "forwards" });
+        }
+
+        const letters = "1234567890.";
+
+        let interval = null;
+
+        document.querySelector("h1").onmouseover = event => {
+            let iteration = 0;
+
+            clearInterval(interval);
+
+            interval = setInterval(() => {
+                event.target.innerText = event.target.innerText
+                    .split("")
+                    .map((letter, index) => {
+                        if (event.target.dataset.value[index] === "."){
+                            return "."
+                        }
+                        if (index < iteration) {
+                            return event.target.dataset.value[index];
+                        }
+
+                        return letters[Math.floor(Math.random() * 10)]
+                    })
+                    .join("");
+
+                if (iteration >= event.target.dataset.value.length) {
+                    clearInterval(interval);
+                }
+
+                iteration += 1 / 3;
+            }, 30);
+        }
+    </script>
+</body>
+
+</html>
